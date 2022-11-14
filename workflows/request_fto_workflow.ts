@@ -1,4 +1,5 @@
 import { DefineWorkflow, Schema } from "deno-slack-sdk/mod.ts";
+import { RequestFTO } from "../functions/request_fto.ts";
 
 // Step 0. Define the workflow!
 const CreateFTOWorkflow = DefineWorkflow({
@@ -51,15 +52,15 @@ const ftoRequestData = CreateFTOWorkflow.addStep(
   },
 );
 
-// Step 2. Send the request to the manager
+// Step 2. Send the request to the manager using a custom function
 CreateFTOWorkflow.addStep(
-  Schema.slack.functions.SendDm,
+  RequestFTO,
   {
-    user_id: ftoRequestData.outputs.fields.manager,
-    message:
-      `*Time off request from <@${CreateFTOWorkflow.inputs.interactivity.interactor.id}>*\n` +
-      `From *${ftoRequestData.outputs.fields.start_date}* to *${ftoRequestData.outputs.fields.end_date}*\n` +
-      `> ${ftoRequestData.outputs.fields.reason}`,
+    manager: ftoRequestData.outputs.fields.manager,
+    employee: CreateFTOWorkflow.inputs.interactivity.interactor.id,
+    start_date: ftoRequestData.outputs.fields.start_date,
+    end_date: ftoRequestData.outputs.fields.end_date,
+    reason: ftoRequestData.outputs.fields.reason,
   },
 );
 
