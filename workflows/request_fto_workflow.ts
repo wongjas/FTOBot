@@ -64,4 +64,14 @@ CreateFTOWorkflow.addStep(
   },
 );
 
+// Step 3. Notify the requester that the request was sent
+CreateFTOWorkflow.addStep(Schema.slack.functions.SendEphemeralMessage, {
+  channel_id: CreateFTOWorkflow.inputs.channel,
+  user_id: CreateFTOWorkflow.inputs.interactivity.interactor.id,
+  message:
+    `Your request for time off from *${ftoRequestData.outputs.fields.start_date}*` +
+    ` to *${ftoRequestData.outputs.fields.end_date}* has been sent to` +
+    ` <@${ftoRequestData.outputs.fields.manager}>\n`,
+});
+
 export default CreateFTOWorkflow;
