@@ -84,14 +84,14 @@ export default SlackFunction(
         type: "section",
         text: {
           type: "mrkdwn",
-          text: "No PTO requests have been created",
+          text: "No FTO requests have been created",
         },
       }];
 
     // Send a list of requests to the searcher
     const message = await client.chat.postMessage({
       channel: searcher_id,
-      text: `*PTO requests for <@${employee}>*`,
+      text: `*FTO requests for <@${employee}>*`,
       blocks: [
         {
           type: "section",
