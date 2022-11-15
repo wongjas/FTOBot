@@ -37,7 +37,7 @@ export const RequestFTO = DefineFunction({
   },
 });
 
-// Send a message constructed with Block Kit message to the manager
+// Notify the manager of a request and store the request
 export default SlackFunction(
   RequestFTO,
   async ({ inputs, client }) => {
@@ -81,6 +81,23 @@ export default SlackFunction(
     if (!message.ok) {
       return { error: `Failed to send message: ${message.error}` };
     }
+
+    const putResponse = await client.apps.datastore.put({
+      datastore: "fto_requests",
+      item: {
+        request_id: crypto.randomUUID(),
+        employee,
+        manager,
+        start_date,
+        end_date,
+        reason,
+      },
+    });
+
+    if (!putResponse.ok) {
+      return { error: `Failed to store request: ${putResponse.error}` };
+    }
+
     return { outputs: {} };
   },
 );
