@@ -128,6 +128,7 @@ export default SlackFunction(
     const { manager, employee, start_date, end_date, reason } =
       body.function_data.inputs;
 
+    // Update request in the datastore
     const putResponse = await client.apps.datastore.put<
       typeof FTORequestsDatastore.definition
     >({
@@ -144,9 +145,13 @@ export default SlackFunction(
     });
 
     if (!putResponse.ok) {
-      return { error: `Failed to update request: ${putResponse.error}` };
+      return await client.functions.completeError({
+        function_execution_id: body.function_data.execution_id,
+        error: `Failed to update request: ${putResponse.error}`,
+      });
     }
 
+    // Update the message to the manager
     const message = await client.chat.update({
       channel: body.channel?.id,
       ts: body.message?.ts,
@@ -182,9 +187,13 @@ export default SlackFunction(
     });
 
     if (!message.ok) {
-      return { error: `Failed to update message: ${message.error}` };
+      return await client.functions.completeError({
+        function_execution_id: body.function_data.execution_id,
+        error: `Failed to update message: ${message.error}`,
+      });
     }
 
+    // Complete the function successfully
     await client.functions.completeSuccess({
       function_execution_id: body.function_data.execution_id,
       outputs: {},
