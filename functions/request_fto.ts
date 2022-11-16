@@ -33,8 +33,13 @@ export const RequestFTO = DefineFunction({
     required: ["manager", "employee", "start_date", "end_date"],
   },
   output_parameters: {
-    properties: {},
-    required: [],
+    properties: {
+      response: {
+        type: Schema.types.boolean,
+        description: "The managers approval decision",
+      },
+    },
+    required: ["response"],
   },
 });
 
@@ -193,10 +198,28 @@ export default SlackFunction(
       });
     }
 
+    // Notify the requestor of the decision
+    const dm = await client.chat.postMessage({
+      channel: employee,
+      text:
+        `Your request for time off from *${start_date}* to *${end_date}* has been` +
+        ` ${action.action_id === "approve_request" ? "approved" : "denied"}` +
+        ` by <@${manager}>\n`,
+    });
+
+    if (!dm.ok) {
+      return await client.functions.completeError({
+        function_execution_id: body.function_data.execution_id,
+        error: `Failed to notify requestor: ${dm.error}`,
+      });
+    }
+
     // Complete the function successfully
     await client.functions.completeSuccess({
       function_execution_id: body.function_data.execution_id,
-      outputs: {},
+      outputs: {
+        response: action.action_id === "approve_request",
+      },
     });
   },
 );
