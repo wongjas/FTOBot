@@ -22,5 +22,8 @@ export const FTORequestsDatastore = DefineDatastore({
     reason: {
       type: Schema.types.string,
     },
+    approved: {
+      type: Schema.types.boolean,
+    },
   },
 });

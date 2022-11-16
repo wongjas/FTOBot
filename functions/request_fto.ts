@@ -1,4 +1,5 @@
 import { DefineFunction, Schema, SlackFunction } from "deno-slack-sdk/mod.ts";
+import { FTORequestsDatastore } from "../datastores/fto_requests.ts";
 
 // Define the inputs needed for a time off request
 export const RequestFTO = DefineFunction({
@@ -118,6 +119,32 @@ export default SlackFunction(
       return { error: `Failed to store request: ${putResponse.error}` };
     }
 
-    return { outputs: {} };
+    return { completed: false };
+  },
+).addBlockActionsHandler(
+  ["approve_request", "deny_request"],
+  async ({ action, body, client }) => {
+    const metadata = body.message?.metadata;
+    const { manager, employee, start_date, end_date, reason } =
+      body.function_data.inputs;
+
+    const putResponse = await client.apps.datastore.put<
+      typeof FTORequestsDatastore.definition
+    >({
+      datastore: "fto_requests",
+      item: {
+        request_id: metadata?.event_payload?.request_id,
+        manager,
+        employee,
+        start_date,
+        end_date,
+        reason,
+        approved: action.action_id === "approve_request",
+      },
+    });
+
+    if (!putResponse.ok) {
+      return { error: `Failed to update request: ${putResponse.error}` };
+    }
   },
 );
