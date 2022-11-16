@@ -9,16 +9,15 @@ export const LookupFTO = DefineFunction({
   source_file: "functions/lookup_fto.ts",
   input_parameters: {
     properties: {
+      interactivity: {
+        type: Schema.slack.types.interactivity,
+      },
       employee: {
         type: Schema.slack.types.user_id,
         description: "The employee to search for",
       },
-      searcher_id: {
-        type: Schema.slack.types.user_id,
-        description: "The user to send results to",
-      },
     },
-    required: ["employee", "searcher_id"],
+    required: ["interactivity", "employee"],
   },
   output_parameters: {
     properties: {},
@@ -30,7 +29,7 @@ export const LookupFTO = DefineFunction({
 export default SlackFunction(
   LookupFTO,
   async ({ inputs, client }) => {
-    const { employee, searcher_id } = inputs;
+    const { employee } = inputs;
 
     // Query the datastore
     const getResponse = await client.apps.datastore.query<
@@ -84,30 +83,38 @@ export default SlackFunction(
         type: "section",
         text: {
           type: "mrkdwn",
-          text: "No FTO requests have been created",
+          text: `No FTO requests have been created for <@${employee}>`,
         },
       }];
 
-    // Send a list of requests to the searcher
-    const message = await client.chat.postMessage({
-      channel: searcher_id,
-      text: `*FTO requests for <@${employee}>*`,
-      blocks: [
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: `*FTO requests for <@${employee}>*`,
-          },
+    if (items.length > 0) {
+      sections.unshift({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `FTO requests for <@${employee}>`,
         },
-        ...sections,
-      ],
-    });
-
-    if (!message.ok) {
-      return { error: `Failed to send message: ${message.error}` };
+      });
     }
 
-    return { outputs: {} };
+    // Display a modal with requests to the searcher
+    const modal = await client.views.open({
+      interactivity_pointer: inputs.interactivity.interactivity_pointer,
+      view: {
+        type: "modal",
+        title: {
+          type: "plain_text",
+          text: "View FTO requests",
+        },
+        blocks: sections,
+        callback_id: "view_fto_requests",
+      },
+    });
+
+    if (!modal.ok) {
+      return { error: `Failed to open modal: ${modal.error}` };
+    }
+
+    return { completed: false };
   },
 );

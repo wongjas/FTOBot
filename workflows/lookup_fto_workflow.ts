@@ -39,8 +39,8 @@ const searchParameters = LookupFTOWorkflow.addStep(
 LookupFTOWorkflow.addStep(
   LookupFTO,
   {
+    interactivity: searchParameters.outputs.interactivity,
     employee: searchParameters.outputs.fields.employee,
-    searcher_id: LookupFTOWorkflow.inputs.interactivity.interactor.id,
   },
 );
 
