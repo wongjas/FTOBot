@@ -57,14 +57,25 @@ export default SlackFunction(
         if (req.approved) status = ":white_check_mark:";
         else if (req.approved !== undefined) status = ":x:";
 
+        const deleteButton = {
+          type: "button",
+          text: {
+            type: "plain_text",
+            text: "Delete",
+            emoji: true,
+          },
+          value: req.request_id,
+          action_id: "delete_request",
+        };
+
         if (req.reason) {
           return [{
             type: "section",
             text: {
               type: "mrkdwn",
-              text:
-                `${status}  ${req.start_date} - ${req.end_date}  \`${req.request_id}\``,
+              text: `${status}  ${req.start_date} - ${req.end_date}`,
             },
+            accessory: deleteButton,
           }, {
             type: "context",
             elements: [{
@@ -80,9 +91,9 @@ export default SlackFunction(
           type: "section",
           text: {
             type: "mrkdwn",
-            text:
-              `${status}  ${req.start_date} - ${req.end_date}  \`${req.request_id}\``,
+            text: `${status}  ${req.start_date} - ${req.end_date}`,
           },
+          accessory: deleteButton,
         }];
       })
       : [{
