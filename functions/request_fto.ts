@@ -146,5 +146,43 @@ export default SlackFunction(
     if (!putResponse.ok) {
       return { error: `Failed to update request: ${putResponse.error}` };
     }
+
+    const message = await client.chat.update({
+      channel: body.channel?.id,
+      ts: body.message?.ts,
+      blocks: [{
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*FTO request from <@${employee}>*`,
+        },
+      }, {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Dates:* ${start_date} to ${end_date}`,
+        },
+      }, {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Reason:* ${reason ?? "_none provided_"}`,
+        },
+      }, {
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: action.action_id === "approve_request"
+              ? ":white_check_mark: Approved"
+              : ":x: Denied",
+          },
+        ],
+      }],
+    });
+
+    if (!message.ok) {
+      return { error: `Failed to update message: ${message.error}` };
+    }
   },
 );
