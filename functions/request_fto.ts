@@ -46,36 +46,51 @@ export default SlackFunction(
     const message = await client.chat.postMessage({
       channel: manager,
       text: "A new time-off request has been submitted",
-      blocks: [
-        {
-          type: "header",
+      blocks: [{
+        type: "header",
+        text: {
+          type: "plain_text",
+          text: `A new time-off request has been submitted`,
+        },
+      }, {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*From:* <@${employee}>`,
+        },
+      }, {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Dates:* ${start_date} to ${end_date}`,
+        },
+      }, {
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `*Reason:* ${reason ?? "_none provided_"}`,
+        },
+      }, {
+        "type": "actions",
+        "block_id": "approve-deny-buttons",
+        "elements": [{
+          type: "button",
           text: {
             type: "plain_text",
-            text: `A new time-off request has been submitted`,
+            text: "Approve",
           },
-        },
-        {
-          type: "section",
+          action_id: "approve_request",
+          style: "primary",
+        }, {
+          type: "button",
           text: {
-            type: "mrkdwn",
-            text: `*From:* <@${employee}>`,
+            type: "plain_text",
+            text: "Deny",
           },
-        },
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: `*Dates:* ${start_date} to ${end_date}`,
-          },
-        },
-        {
-          type: "section",
-          text: {
-            type: "mrkdwn",
-            text: `*Reason:* ${reason ?? "_none provided_"}`,
-          },
-        },
-      ],
+          action_id: "deny_request",
+          style: "danger",
+        }],
+      }],
     });
 
     if (!message.ok) {
