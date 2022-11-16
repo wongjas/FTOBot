@@ -42,6 +42,7 @@ export default SlackFunction(
   RequestFTO,
   async ({ inputs, client }) => {
     const { manager, employee, start_date, end_date, reason } = inputs;
+    const request_id = crypto.randomUUID();
 
     const message = await client.chat.postMessage({
       channel: manager,
@@ -91,6 +92,10 @@ export default SlackFunction(
           style: "danger",
         }],
       }],
+      metadata: {
+        event_type: "pto_request_created",
+        event_payload: { request_id },
+      },
     });
 
     if (!message.ok) {
@@ -100,7 +105,7 @@ export default SlackFunction(
     const putResponse = await client.apps.datastore.put({
       datastore: "fto_requests",
       item: {
-        request_id: crypto.randomUUID(),
+        request_id,
         employee,
         manager,
         start_date,
