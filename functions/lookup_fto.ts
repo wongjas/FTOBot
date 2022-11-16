@@ -48,7 +48,11 @@ export default SlackFunction(
     // Create a list of requests
     const { items } = getResponse;
     const sections = items.length > 0
-      ? getResponse.items.flatMap((req) => {
+      ? getResponse.items.sort((a, b) => {
+        const d1 = new Date(a.start_date);
+        const d2 = new Date(b.start_date);
+        return d1 < d2 ? -1 : 1;
+      }).flatMap((req) => {
         let status = ":black_square_for_stop:";
         if (req.approved) status = ":white_check_mark:";
         else if (req.approved !== undefined) status = ":x:";
