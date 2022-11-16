@@ -49,23 +49,25 @@ export default SlackFunction(
     const { items } = getResponse;
     const sections = items.length > 0
       ? getResponse.items.flatMap((req) => {
+        let status = ":black_square_for_stop:";
+        if (req.approved) status = ":white_check_mark:";
+        else if (req.approved !== undefined) status = ":x:";
+
         if (req.reason) {
           return [{
             type: "section",
             text: {
               type: "mrkdwn",
               text:
-                `- ${req.start_date} - ${req.end_date}  \`${req.request_id}\``,
+                `${status}  ${req.start_date} - ${req.end_date}  \`${req.request_id}\``,
             },
           }, {
             type: "context",
-            elements: [
-              {
-                type: "plain_text",
-                text: req.reason,
-                emoji: true,
-              },
-            ],
+            elements: [{
+              type: "plain_text",
+              text: req.reason,
+              emoji: true,
+            }],
           }];
         }
 
@@ -75,7 +77,7 @@ export default SlackFunction(
           text: {
             type: "mrkdwn",
             text:
-              `- ${req.start_date} - ${req.end_date}  \`${req.request_id}\``,
+              `${status}  ${req.start_date} - ${req.end_date}  \`${req.request_id}\``,
           },
         }];
       })
