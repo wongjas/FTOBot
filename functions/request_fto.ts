@@ -184,5 +184,10 @@ export default SlackFunction(
     if (!message.ok) {
       return { error: `Failed to update message: ${message.error}` };
     }
+
+    await client.functions.completeSuccess({
+      function_execution_id: body.function_data.execution_id,
+      outputs: {},
+    });
   },
 );
